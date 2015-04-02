@@ -1,0 +1,17 @@
+(* nicht editieren ! *)
+var
+  sprach_start:longint;
+  textz_titel2  :^string;
+  textz_syntax1  :^string;
+  textz_syntax2  :^string;
+  textz_zusatz_zu_gross  :^string;
+  textz_zusatz_ist_exe  :^string;
+  textz_null_datei  :^string;
+  textz_exe_overlays  :^string;
+  textz_Byte_aufgefuellt  :^string;
+  textz_Byte_EXE_Anpasser  :^string;
+  textz_Byte_COM_Anpasser  :^string;
+  textz_Byte_Zusatz  :^string;
+  textz_Beide_Dateien_zusammen_sind_zu_gross  :^string;
+  textz_min_heap  :^string;
+  textz_max_heap  :^string;

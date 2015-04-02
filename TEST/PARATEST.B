@@ -1,0 +1,11 @@
+echo Paramstr(0)="%0"
+echo Paramstr(1)="%1"
+echo Paramstr(2)="%2"
+echo Paramstr(3)="%3"
+echo Paramstr(4)="%4"
+echo Paramstr(5)="%5"
+echo Paramstr(6)="%6"
+echo Paramstr(7)="%7"
+echo Paramstr(8)="%8"
+echo Paramstr(9)="%9"
+pause

@@ -1,0 +1,81 @@
+; para0 * Umleiten von EXE/COM Selbsttestversuchen
+; V.K. 03.07.1997
+;
+include ..\anh.a86
+
+                        anh_kopf 'Selbsttest umleiten'
+
+                        cli
+                        push ax,bx,cx,dx,si,di,ds,es
+                          mov ax,es:[0002c]
+                          cmp ax,0
+                          mov dx,fehler_keine_umgebung_text
+                          jz fehler_ende
+
+                          sub ax,1
+                          mov es,ax
+                          mov cx,es:[00003]
+                          shl cx,4     ; *16
+                          and cx,00fff ; 4096 maximale Umgebung
+
+                          sub al,al
+                          cld
+                          mov di,00010 ; nach dem MCB
+                          mov dx,fehler_defekte_umgebung_text
+
+suchschleife:
+                          repnz scasb
+                          jcxz fehler_ende
+                          scasb
+                          jnz suchschleife
+
+                          inc al
+                          scasb
+                          jnz fehler_ende
+
+                          dec al
+                          scasb
+                          jnz fehler_ende
+
+                          ; jetzt zeigt es:di auf den Programmnamen
+                          repnz scasb
+
+                          mov ax,cs
+                          mov ds,ax
+                          mov si,programm_name
+                          mov cl,b [programm_name_laenge]
+                          sub ch,ch
+                          sub di,cx
+                          dec di
+                          rep movsb
+
+                        pop es,ds,di,si,dx,cx,bx,ax
+                        sti
+                        ret
+
+fehler_ende:
+                          sti
+                          ; Fehlermeldung
+                          mov ah,009
+                          int 021
+
+                          ; Halt(254)
+                          mov ax,04cfe
+                          int 021
+
+;**************************************************************************
+                          db 00d,00a
+                          db 'Namenl„nge='
+programm_name_laenge:     db 8+1+3
+                          db 00d,00a
+                          db 'Programmname='
+programm_name:            db '12345678.EXE'
+                          db 00d,00a
+
+fehler_keine_umgebung_text:
+                          db 7,'PARA0: keine Umgebung vorhanden !',00d,00a
+                          db '$'
+fehler_defekte_umgebung_text:
+                          db 7,'PARA0: defekte Umgebung !',00d,00a
+                          db '$'
+

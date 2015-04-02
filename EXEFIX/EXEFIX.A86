@@ -1,0 +1,30 @@
+
+exefix_laenge		equ 020
+
+org 00100-exefix_laenge ; ist auch in Wirklichkeit dann so
+
+
+			push cs                ; org CS     ; [bp+6]
+			  push '??'            ; org IP     ; [bp+4]
+
+			    push ret_stelle                 ; [bp+2]
+
+			      push bp                       ; [bp  ]
+
+				mov bp,sp
+
+				sub [bp+6],'??'  ; Differenz zu org CS
+
+			      pop bp
+
+			      ; Sprung XXX:0100
+			      jmp 00100
+
+ret_stelle:
+			retf
+
+;**************************************************************************
+
+                        db (00100-$) dup 01a ; ^z
+
+;**************************************************************************

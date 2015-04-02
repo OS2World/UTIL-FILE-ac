@@ -1,0 +1,55 @@
+
+; COMFIX * restauriert Anfang von COM-Dateien
+
+comfix_laenge           equ 030
+
+org 00100-comfix_laenge
+
+;push cs                                         ; [bp+a]
+;call $+3                                        ; [bp+8]
+
+;**************************************************************************
+
+			  push retf_stelle       ; [bp+6]
+
+			    push cs              ; [bp+4]
+			      push 00100         ; [bp+2]
+
+				push bp          ; [bp  ]
+				  mov bp,sp
+
+				  push ds
+				    push di
+
+  				     ; retf nach 0100 statt 0104
+				      sub w [bp+8],4
+				      
+				      ; Aufruf restaurieren
+				      lds di,[bp+8]
+				      mov w [di  ],0cccc ; int 3
+				      mov w [di+2],020cd ; int 020
+
+
+				      ; CS:XXX in YYY:100 umrechnen
+				      call $+3
+pop_di_stelle:
+				      pop di
+				      sub di,pop_di_stelle
+				      shr di,4          ; /16
+				      add w [bp+4],di
+
+				    pop di
+				  pop ds
+
+				pop bp
+
+			    retf 	; Sprung     zu ANH:0100
+
+retf_stelle:
+              		retf     	; RÅcksprung zu ORG:XXXX
+
+;**************************************************************************
+
+                        db (00100-$) dup 01a ; ^z
+
+;**************************************************************************

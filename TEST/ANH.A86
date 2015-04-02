@@ -1,0 +1,12 @@
+anh_kopf macro
+
+			xchg al,al ; Signatur
+  			jmp short nach_kopf
+
+			db 00d
+  			db #1
+			db 26 ; ^z
+
+nach_kopf:
+
+#em

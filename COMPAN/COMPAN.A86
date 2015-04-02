@@ -1,0 +1,44 @@
+; V.K. 1999.01.14
+;
+include anh.a86
+
+                        anh_kopf 'COM->EXE compagnion for 32stub'
+
+                        cli
+                        pusha
+                          push ds,es
+                            ; Umgebung
+                            mov ax,[0002c]
+                            mov ds,ax
+                            mov es,ax
+                            
+                            ; suche #0#0
+                            sub di,di
+                            sub ax,ax
+                            
+  l1:
+                            inc di
+                            cmp word [di],ax
+                            jne l1
+                            
+                            ; 0,1
+                            add di,4
+  l2:
+                            inc di
+                            cmp byte [di],0
+                            jne l2
+                            
+                            sub di,3    ; 'COM'#0
+                            mov al,'E'  ; 'EXE'#0
+                            stosb
+                            mov al,'X'
+                            stosb
+                            mov al,'E'
+                            stosb
+
+                          pop es,ds
+                        popa
+                        sti
+                        ret
+
+

@@ -1,0 +1,257 @@
+; Freigabe der Umgebungsvariablen
+; V.K. 01.07.1997 .. 08.12.1997
+; fÅr AC
+
+include ..\anh.a86
+
+start:
+
+#if KLEIN
+			anh_kopf 'Freigabe der Umgebung (min)'
+			push ax
+			  mov ax,[0002c]
+			  cmp ax,0
+			  jz ohne_umgebung
+
+			  push es
+                            mov es,ax
+			    mov ah,049
+			    int 021			; nur freigeben
+
+                            mov w [0002c],0
+
+			  pop es
+ohne_umgebung:
+			pop ax
+                        ret
+
+
+#else                   ;****************************************************
+
+     			anh_kopf 'Freigabe der Umgebung (fehlerhaft?)'
+
+			push ax
+			  mov ax,[0002c] 		; Segment der Umgebung
+			  cmp ax,0       		; keine ?
+			  jz ohne_umgebung
+
+                          push cx               	; Umgebung genau
+			    push dx			; vor dem eigenen PSP ?
+                              push es
+				mov dx,ax
+				dec dx      		; MCB der Umgebung
+				mov es,dx
+				add dx,es:[00003] 	; Grî·e der Umgebung
+				inc dx            	; MCB der Umgebung
+				inc dx            	; MCB des Programms
+
+				mov cx,ds
+				sub dx,cx         	; direkt zusammenhÑngend ?
+
+				jz direkt_zusammenhaengend
+
+
+				mov es,ax      		; NEIN !
+				mov ah,049		; deshalb
+				int 021			; nur freigeben
+
+			      pop es
+
+			      mov w [0002c],0	; jetzt ohne Umgebung
+			    pop dx
+			  pop cx
+
+ohne_umgebung:
+			pop ax
+			ret
+
+
+direkt_zusammenhaengend:
+
+			      pop es
+
+			    pop dx
+			  pop cx
+
+                        pop ax
+
+			add sp,2 			; "ret"
+
+			pop w cs:[ruecksprung_o]
+			pop w cs:[ruecksprung_s]
+
+                      ;****** STACK leer ******************************
+
+                        mov w cs:[sicherung_ax],ax
+                        mov w cs:[sicherung_bx],bx
+                        mov w cs:[sicherung_cx],cx
+                        mov w cs:[sicherung_dx],dx
+
+                        mov w cs:[sicherung_ds],ds
+                        mov w cs:[sicherung_es],es
+                        mov w cs:[sicherung_ss],ss
+
+                        mov w cs:[sicherung_si],si
+                        mov w cs:[sicherung_di],di
+                        mov w cs:[sicherung_bp],bp
+                        mov w cs:[sicherung_sp],sp
+			
+
+			; Wie gro· ist das eigentliche Programm ?
+			; es:080 bis cs:100
+			mov ax,cs                               ; +CS:100
+		        mov bx,es                               ; -ES:080
+                        sub ax,bx
+                        add ax,0100/16                          
+			sub ax,0080/16
+                        mov w cs:[programm_groesse],ax
+
+
+			mov bx,[0002c]    ; ES=neuer Speicheranfang
+                        dec bx
+                        mov es,bx
+
+                        mov ax,ds         ; DS=alter Speicheranfang
+                        dec ax
+                        mov ds,ax
+			
+
+                        sub ax,bx
+                        ; Differenz auf Segmentregister anwenden
+                        sub w cs:[ruecksprung_s],ax
+                        sub w cs:[sicherung_ds ],ax
+                        sub w cs:[sicherung_es ],ax
+                        sub w cs:[sicherung_ss ],ax
+			
+			
+			; neues PSP erzeugen
+			mov ah,026
+			mov dx,es
+			inc dx
+			int 021
+
+
+			; Parent PSP Åbernehmen
+			mov ax,w [010+00016]
+			mov w es:[010+00016],ax
+			
+			; und setzen
+			mov ah,050
+			mov bx,es
+			inc bx
+			int 021
+			
+
+
+                        mov ax,[00003]
+                        inc ax            ; 1 MCB
+
+                        ; Speicher zusammenkleben
+                        add es:[00003],ax
+
+			; ich gehîre mir selbst
+			mov ax,es
+			inc ax
+			mov es:[00001],ax
+
+
+			; MCB-Programmnamen kopieren
+			mov cx,8/2
+			mov si,8
+			mov di,8
+			cld
+			rep movsw
+
+
+                        cli
+                        cld
+
+
+                        ; Kopieren ...
+                        mov cx,w cs:[programm_groesse]
+			; DS:10=PSP
+			; ES:10=Umgebung
+
+			mov ax,es  ; inc es
+                        add ax,080/16
+                        mov es,ax
+			
+			mov ax,ds  ; inc ds
+                        add ax,080/16
+                        mov ds,ax
+
+
+
+verschiebe_schleife:
+                        mov ax,es  ; inc es
+                        inc ax
+                        mov es,ax
+
+                        mov ax,ds  ; inc ds
+                        inc ax
+                        mov ds,ax
+
+			sub si,si
+			sub di,di
+
+                        mov bx,cx
+                        mov cx,16/2
+                        rep movsw
+                        mov cx,bx
+
+                        loop verschiebe_schleife
+
+
+                        ; Anpassen ...
+                        mov ds,w cs:[sicherung_ds]
+                        mov es,w cs:[sicherung_es]
+                        mov ss,w cs:[sicherung_ss]
+			
+			mov sp,w cs:[sicherung_sp]
+
+
+			; endlich ...
+			mov w [0002c],0 ; keine Umgebung
+
+			
+
+                        mov ax,w cs:[sicherung_ax]
+                        mov bx,w cs:[sicherung_bx]
+                        mov cx,w cs:[sicherung_cx]
+                        mov dx,w cs:[sicherung_dx]
+
+                        mov si,w cs:[sicherung_si]
+                        mov di,w cs:[sicherung_di]
+                        mov bp,w cs:[sicherung_bp]
+
+			sti
+
+                        jmp d cs:[ruecksprung]
+
+
+                        ;**********************************************
+
+
+programm_groesse:       dw ? ; Segmente
+
+sicherung_ax:           dw ?
+sicherung_bx:           dw ?
+sicherung_cx:           dw ?
+sicherung_dx:           dw ?
+
+sicherung_ds:           dw ?
+sicherung_es:           dw ?
+sicherung_ss:           dw ?
+
+sicherung_si:           dw ?
+sicherung_di:           dw ?
+sicherung_bp:           dw ?
+sicherung_sp:           dw ?
+
+ruecksprung:
+ruecksprung_o:          dw ?
+ruecksprung_s:          dw ?
+
+#endif
+
+

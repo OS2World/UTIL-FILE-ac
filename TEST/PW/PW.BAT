@@ -1,0 +1,5 @@
+@ECHO OFF
+COPY ..\PRG.COM TEST.COM
+..\..\AC.EXE TEST.COM PW.COM
+ECHO "test" / [Strg]-[C]
+TEST.COM

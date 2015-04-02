@@ -1,0 +1,53 @@
+include ..\anh.a86
+
+                        anh_kopf 'Parameter anh„ngen'
+
+			push ax,cx,dx,si,di,ds
+
+			  mov ax,cs ; ds:=cs
+			  mov ds,ax
+
+			  mov si,00080 ; vorhandene L„nge
+			  es:lodsb
+
+			  sub ah,ah
+			  add si,ax    ; 1. anzuh„ngende Postion
+			  mov di,si
+			  mov si,zusatzzeichenkette
+			  mov cx,di
+			  mov al,b [laenge]
+			  add es:[00080],al
+			  sub ah,ah
+			  add cx,ax
+			  cmp cx,00100 ; zu lang ?
+			  jae fehler
+			  
+			  mov cx,ax    ; Schreiben
+			  rep movsb
+			  
+			  mov al,00d   ; Enter
+			  stosb
+                        pop ds,di,si,dx,cx,ax
+			ret
+
+
+				
+fehler:			  mov ah,009
+			  mov dx,fehler_text
+			  int 021
+			  
+			  mov ax,04cfe ; 254
+			  int 021
+				
+				
+
+			db 00d,00a
+            		db 'LŽNGE='
+laenge:			db 2
+			db 00d,00a
+			db 'PARA ='
+zusatzzeichenkette:	db '/?',
+			db (128-2-1) dup ' '
+
+fehler_text:     	db 7,'Parameter zu lang !',00d,00a
+			db '$'

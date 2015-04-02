@@ -1,0 +1,51 @@
+; einfachste Paáwortabfrage
+include ..\anh.a86
+
+                        anh_kopf 'Paáwortabfrage'
+
+                        push ax,cx,dx,si,di,ds,es
+
+                          mov ax,cs
+                          mov ds,ax
+                          mov es,ax
+
+eingabe_schleife:
+                          mov ah,009
+                          mov dx,hinweis
+                          int 021
+
+                          mov ah,00a
+                          mov dx,eingabe
+                          int 021
+
+                          mov ch,0
+                          mov cl,b [laenge]
+                          jcxz abbruch
+
+                          inc cx
+                          mov si,eingegebenes_passwort
+                          mov di,richtiges_passwort
+                          cld
+                          rep cmpsb
+                          jnz eingabe_schleife
+
+                        pop es,ds,di,si,dx,cx,ax
+
+                        ret
+
+
+abbruch:
+                          mov ax,04cfe
+                          int 021
+
+
+;********************************************************************
+
+eingabe:                  db 9 ; max
+laenge:                   db ?
+eingegebenes_passwort:    db (8+1) dup '-'
+
+richtiges_passwort:
+                          db 'test',(4+1) dup 00d
+
+hinweis:                  db '? $'

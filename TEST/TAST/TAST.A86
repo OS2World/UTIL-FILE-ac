@@ -1,0 +1,43 @@
+; TastendrÅcker 
+; fÅr AC
+; V.K. 04.07.1997
+
+include ..\anh.a86
+
+                        anh_kopf 'TastendrÅcke simulieren'
+
+			push ax,cx,ds
+			  mov ax,cs
+			  mov ds,ax
+			  mov ch,0
+			  mov cl,b [anzahl_tasten]
+			  
+			  mov si,tasten
+			  jcxz fertig
+
+schleife:
+			  
+			  cld
+			  lodsw
+			  push cx
+			    mov cx,ax
+			    mov ah,005
+			    int 016
+			  pop cx
+			  loop schleife
+			  
+fertig:                 pop ds,cx,ax
+			ret
+			  
+			db 00d,00a  
+			db 'Anzahl='
+anzahl_tasten:		db 4
+			db 00d,00a
+
+			db 'Tasten='
+tasten:			dw '?V','?O','?L',01c0d 
+                        ; 01c=28=Tastennummer 00d=13=Enter
+
+			dw 16-4 dup '  '
+			db 00d,00a
+

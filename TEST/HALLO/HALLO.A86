@@ -1,0 +1,25 @@
+include ..\anh.a86
+
+                        anh_kopf 'Hallo-Text'
+
+                        push ds
+                          push ax
+                            push dx
+                              mov ax,cs
+                              mov ds,ax
+
+                              mov ah,009
+                              mov dx,hallo
+                              int 021
+                            pop dx
+                          pop ax
+                        pop ds
+
+                        ret
+
+hallo:
+                        db 'ษอออออออออออออออออออออออออออออป',00d,00a
+                        db 'บ Hallo ..... Vorprogrammm .. บ',00d,00a
+                        db 'ศอออออออออออออออออออออออออออออผ',00d,00a
+                        db '$'
+

@@ -1,0 +1,14 @@
+; Testprogramm
+                        mov ah,009
+                        mov dx,titel
+                        int 021
+
+                        mov ax,04c00
+                        int 021
+
+titel:
+                        db 'ษอออออออออออออออออออออออออออออป',00d,00a
+                        db 'บ Testprogramm .............. บ',00d,00a
+                        db 'ศอออออออออออออออออออออออออออออผ',00d,00a
+                        db '$'
+

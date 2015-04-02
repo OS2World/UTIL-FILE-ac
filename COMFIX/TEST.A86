@@ -1,0 +1,16 @@
+push cs
+call xxx
+
+nop
+nop
+nop
+
+mov ax,04c00
+int 021
+
+db 1000 dup '*'
+
+
+even 16
+
+xxx:
